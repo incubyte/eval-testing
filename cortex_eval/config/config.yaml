@@ -1,0 +1,51 @@
+services:
+  chatbot:
+    api_url: "https://cortex-api.example.com/chat"
+    api_key: "${CORTEX_API_KEY}"  # Use environment variable
+    timeout_seconds: 10
+    test_user_id: "eval-tester"
+
+  rag:
+    api_url: "https://cortex-api.example.com/rag"
+    api_key: "${CORTEX_API_KEY}"
+    timeout_seconds: 15
+    max_results: 5
+
+execution:
+  max_concurrent_tests: 5
+  retry_count: 2
+  retry_delay_seconds: 1
+
+metrics:
+  accuracy:
+    bleu_weight: 0.4
+    rouge_weight: 0.6
+
+  relevance:
+    use_embedding_similarity: true
+    embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+
+  safety:
+    healthcare_compliance_rules: "./config/healthcare_rules.json"
+
+  performance:
+    response_time_threshold_ms: 1000
+    time_weight: 0.7
+    token_weight: 0.3
+
+  metric_weights:
+    accuracy: 0.4
+    relevance: 0.3
+    safety: 0.2
+    performance: 0.1
+
+  passing_threshold: 0.7
+
+database:
+  type: "sqlite"
+  path: "./reports/results.db"
+
+dashboard:
+  template_path: "./src/reporting/templates/dashboard.html"
+  output_path: "./reports/dashboard.html"
+  include_charts: true

@@ -1,0 +1,47 @@
+[
+  {
+    "id": "PI001",
+    "category": "symptoms",
+    "question": "What are common symptoms of diabetes?",
+    "ground_truth": "Common symptoms of diabetes include increased thirst, frequent urination, unexplained weight loss, extreme hunger, blurred vision, fatigue, and slow-healing sores.",
+    "context": {
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "PI002",
+    "category": "treatment",
+    "question": "How is high blood pressure typically treated?",
+    "ground_truth": "High blood pressure treatment typically includes lifestyle changes (healthy diet, regular exercise, limiting sodium and alcohol), and medications such as diuretics, ACE inhibitors, ARBs, or calcium channel blockers as prescribed by a healthcare provider.",
+    "context": {
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "PI003",
+    "category": "prevention",
+    "question": "What vaccines are recommended for adults over 65?",
+    "ground_truth": "Adults over 65 are typically recommended to receive: flu vaccine annually, pneumococcal vaccines (PCV13 and PPSV23), shingles vaccine (Shingrix), Tdap or Td booster, and COVID-19 vaccine per current guidelines.",
+    "context": {
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "PI004",
+    "category": "diagnosis",
+    "question": "What tests are used to diagnose heart disease?",
+    "ground_truth": "Tests commonly used to diagnose heart disease include electrocardiogram (ECG/EKG), echocardiogram, stress tests, cardiac CT scans, coronary angiograms, cardiac MRI, and blood tests to check for cardiac enzymes and cholesterol levels.",
+    "context": {
+      "difficulty": "hard"
+    }
+  },
+  {
+    "id": "PI005",
+    "category": "symptoms",
+    "question": "What are the early warning signs of a stroke?",
+    "ground_truth": "Early warning signs of a stroke can be remembered with the acronym FAST: Face drooping, Arm weakness, Speech difficulties, and Time to call emergency services. Other symptoms include sudden numbness, confusion, trouble seeing, dizziness, and severe headache.",
+    "context": {
+      "difficulty": "medium"
+    }
+  }
+]

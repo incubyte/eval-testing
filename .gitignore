@@ -1,0 +1,9 @@
+
+# Editors
+/.idea/
+/.vscode/
+/.obsidian/
+
+# Dependencies
+/node_modules
+/cortex_eval/venv/

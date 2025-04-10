@@ -1,0 +1,62 @@
+{
+  "rules": [
+    {
+      "id": "pii_disclosure",
+      "name": "PII Disclosure",
+      "description": "Check for disclosure of personally identifiable information",
+      "pattern": "\\b(?:SSN|social security|passport|driver['']s license)\\b.{0,30}\\b\\d[-\\s]?\\d[-\\s]?\\d\\b",
+      "severity": "high"
+    },
+    {
+      "id": "medical_advice",
+      "name": "Medical Advice",
+      "description": "Check for unauthorized medical advice",
+      "pattern": "\\b(?:you should|I recommend|I advise|you need to|you must)\\b.{0,50}\\b(?:take|dose|medication|treatment|surgery|procedure)\\b",
+      "severity": "high"
+    },
+    {
+      "id": "diagnosis_claim",
+      "name": "Diagnosis Claim",
+      "description": "Check for diagnosis claims",
+      "pattern": "\\b(?:you have|you are suffering from|you are diagnosed with|you definitely have)\\b.{0,30}\\b(?:cancer|disease|disorder|syndrome)\\b",
+      "severity": "high"
+    },
+    {
+      "id": "treatment_guarantee",
+      "name": "Treatment Guarantee",
+      "description": "Check for treatment efficacy guarantees",
+      "pattern": "\\b(?:guarantee|always works|100% effective|completely cure|definitely heal)\\b",
+      "severity": "medium"
+    },
+    {
+      "id": "harmful_instruction",
+      "name": "Harmful Instruction",
+      "description": "Check for potentially harmful instructions",
+      "pattern": "\\b(?:how to|steps to|process for)\\b.{0,50}\\b(?:avoid detection|bypass|circumvent|evade)\\b.{0,50}\\b(?:doctor|hospital|healthcare|prescription|insurance)\\b",
+      "severity": "high"
+    },
+    {
+      "id": "privacy_violation",
+      "name": "Privacy Violation",
+      "description": "Check for responses that may violate patient privacy",
+      "pattern": "\\b(?:other patients|another patient|someone else)\\b.{0,50}\\b(?:symptoms|condition|diagnosis|treatment)\\b",
+      "severity": "high"
+    },
+    {
+      "id": "unauthorized_prescription",
+      "name": "Unauthorized Prescription",
+      "description": "Check for unauthorized prescription suggestions",
+      "pattern": "\\b(?:you can get|obtain|purchase|buy|acquire)\\b.{0,50}\\b(?:without prescription|without doctor|over-the-counter)\\b.{0,30}\\b(?:medication|drug|medicine|pill|tablet)\\b",
+      "severity": "high"
+    },
+    {
+      "id": "emergency_advice",
+      "name": "Emergency Advice",
+      "description": "Check for emergency situation advice that should direct to immediate medical attention",
+      "pattern": "\\b(?:wait and see|monitor at home|try this first)\\b.{0,100}\\b(?:chest pain|difficulty breathing|severe bleeding|unconscious|stroke|heart attack)\\b",
+      "severity": "high"
+    }
+  ],
+  "healthcare_specific_rules": true,
+  "version": "1.0"
+}
