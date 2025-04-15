@@ -1,0 +1,117 @@
+# Json Correctness
+
+  * [](/)
+  * Evaluation
+  * Metrics
+  * Json Correctness
+
+On this page
+
+# Json Correctness
+
+The json correctness metric measures whether your LLM application is able to generate `actual_output`s with the correct **json schema**.
+
+note
+
+The `JsonCorrectnessMetric` like the `ToolCorrectnessMetric` is not an LLM-eval, and you'll have to supply your expected Json schema when creating a `JsonCorrectnessMetric`.
+
+## Required Arguments​
+
+To use the `JsonCorrectnessMetric`, you'll have to provide the following arguments when creating an [`LLMTestCase`](/docs/evaluation-test-cases#llm-test-case):
+
+  * `input`
+  * `actual_output`
+
+The `input` and `actual_output` are required to create an `LLMTestCase` (and hence required by all metrics) even though they might not be used for metric calculation. Read the How Is It Calculated section below to learn more.
+
+## Example​
+
+First define your schema by creating a `pydantic` `BaseModel`:
+    
+    
+    from pydantic import BaseModel  
+      
+    class ExampleSchema(BaseModel):  
+        name: str  
+    
+
+tip
+
+If your `actual_output` is a list of JSON objects, you can simply create a list schema by wrapping your existing schema in a `RootModel`. For example:
+    
+    
+    from pydantic import RootModel  
+    from typing import List  
+      
+    ...  
+      
+    class ExampleSchemaList(RootModel[List[ExampleSchema]]):  
+        pass  
+    
+
+Then supply it as the `expected_schema` when creating a `JsonCorrectnessMetric`:
+    
+    
+    from deepeval import evaluate  
+    from deepeval.metrics import JsonCorrectnessMetric  
+    from deepeval.test_case import LLMTestCase  
+      
+      
+    metric = JsonCorrectnessMetric(  
+        expected_schema=ExampleSchema,  
+        model="gpt-4",  
+        include_reason=True  
+    )  
+    test_case = LLMTestCase(  
+        input="Output me a random Json with the 'name' key",  
+        # Replace this with the actual output from your LLM application  
+        actual_output="{'name': null}"  
+    )  
+      
+    # To run metric as a standalone  
+    # metric.measure(test_case)  
+    # print(metric.score, metric.reason)  
+      
+    evaluate(test_cases=[test_case], metrics=[metric])  
+    
+
+There are **ONE** mandatory and **SIX** optional parameters when creating an `PromptAlignmentMetric`:
+
+  * `expected_schema`: a `pydantic` `BaseModel` specifying the schema of the Json that is expected from your LLM.
+  * [Optional] `threshold`: a float representing the minimum passing threshold, defaulted to 0.5.
+  * [Optional] `model`: a string specifying which of OpenAI's GPT models to use to generate reasons, **OR** [any custom LLM model](/docs/metrics-introduction#using-a-custom-llm) of type `DeepEvalBaseLLM`. Defaulted to 'gpt-4o'.
+  * [Optional] `include_reason`: a boolean which when set to `True`, will include a reason for its evaluation score. Defaulted to `True`.
+  * [Optional] `strict_mode`: a boolean which when set to `True`, enforces a binary metric score: 1 for perfection, 0 otherwise. It also overrides the current threshold and sets it to 1. Defaulted to `False`.
+  * [Optional] `async_mode`: a boolean which when set to `True`, enables [concurrent execution within the `measure()` method.](/docs/metrics-introduction#measuring-a-metric-in-async) Defaulted to `True`.
+  * [Optional] `verbose_mode`: a boolean which when set to `True`, prints the intermediate steps used to calculate said metric to the console, as outlined in the How Is It Calculated section. Defaulted to `False`.
+
+info
+
+Unlike other metrics, the `model` is used for generating reason instead of evaluation. It will only be used if the `actual_output` has the wrong schema, **AND** if `include_reason` is set to `True`.
+
+### As a standalone​
+
+You can also run the `JsonCorrectnessMetric` on a single test case as a standalone, one-off execution.
+    
+    
+    ...  
+      
+    metric.measure(test_case)  
+    print(metric.score, metric.reason)  
+    
+
+caution
+
+This is great for debugging or if you wish to build your own evaluation pipeline, but you will **NOT** get the benefits (testing reports, Confident AI platform) and all the optimizations (speed, caching, computation) the `evaluate()` function or `deepeval test run` offers.
+
+## How Is It Calculated?​
+
+The `PromptAlignmentMetric` score is calculated according to the following equation:
+
+Json Corectness={1If the actual output fits the expected schema,0Otherwise\text{Json Corectness} = \begin{cases} 1 & \text{If the actual output fits the expected schema}, \\\ 0 & \text{Otherwise} \end{cases}Json Corectness={10​If the actual output fits the expected schema,Otherwise​
+
+The `JsonCorrectnessMetric` does not use an LLM for evaluation and instead uses the provided `expected_schema` to determine whether the `actual_output` can be loaded into the schema.
+
+[Edit this page](https://github.com/confident-ai/deepeval/edit/main/docs/docs/metrics-json-correctness.mdx)
+
+Last updated on **Apr 12, 2025** by **Jeffrey Ip**

@@ -1,0 +1,85 @@
+# Conversation Completeness
+
+  * [](/)
+  * Evaluation
+  * Metrics
+  * Conversational Metrics
+  * Conversation Completeness
+
+On this page
+
+# Conversation Completeness
+
+The conversation completeness metric is a conversational metric that determines whether your LLM chatbot is able to complete an end-to-end conversation by satisfying user needs **throughout a conversation**.
+
+note
+
+The `ConversationCompletenessMetric` can be used as a proxy to measure user satisfaction throughout a conversation. Conversational metrics are particular useful for an LLM chatbot use case.
+
+## Required Arguments​
+
+To use the `ConversationCompletenessMetric`, you'll have to provide the following arguments when creating a [`ConversationalTestCase`](/docs/evaluation-test-cases#conversational-test-case):
+
+  * `turns`
+
+Additionally, each `LLMTestCase`s in `turns` requires the following arguments:
+
+  * `input`
+  * `actual_output`
+
+## Example​
+
+Let's take this conversation as an example:
+    
+    
+    from deepeval import evaluate  
+    from deepeval.test_case import LLMTestCase, ConversationalTestCase  
+    from deepeval.metrics import ConversationCompletenessMetric  
+      
+    convo_test_case = ConversationalTestCase(  
+        turns=[LLMTestCase(input="...", actual_output="...")]  
+    )  
+    metric = ConversationCompletenessMetric(threshold=0.5)  
+      
+    # To run metric as a standalone  
+    # metric.measure(convo_test_case)  
+    # print(metric.score, metric.reason)  
+      
+    evaluate(test_cases=[convo_test_case], metrics=[metric])  
+    
+
+There are **SIX** optional parameters when creating a `ConversationCompletenessMetric`:
+
+  * [Optional] `threshold`: a float representing the minimum passing threshold, defaulted to 0.5.
+  * [Optional] `model`: a string specifying which of OpenAI's GPT models to use, **OR** [any custom LLM model](/docs/metrics-introduction#using-a-custom-llm) of type `DeepEvalBaseLLM`. Defaulted to 'gpt-4o'.
+  * [Optional] `include_reason`: a boolean which when set to `True`, will include a reason for its evaluation score. Defaulted to `True`.
+  * [Optional] `strict_mode`: a boolean which when set to `True`, enforces a binary metric score: 1 for perfection, 0 otherwise. It also overrides the current threshold and sets it to 1. Defaulted to `False`.
+  * [Optional] `async_mode`: a boolean which when set to `True`, enables [concurrent execution within the `measure()` method.](/docs/metrics-introduction#measuring-metrics-in-async) Defaulted to `True`.
+  * [Optional] `verbose_mode`: a boolean which when set to `True`, prints the intermediate steps used to calculate said metric to the console, as outlined in the How Is It Calculated section. Defaulted to `False`.
+
+### As a standalone​
+
+You can also run the `ConversationCompletenessMetric` on a single test case as a standalone, one-off execution.
+    
+    
+    ...  
+      
+    metric.measure(convo_test_case)  
+    print(metric.score, metric.reason)  
+    
+
+caution
+
+This is great for debugging or if you wish to build your own evaluation pipeline, but you will **NOT** get the benefits (testing reports, Confident AI platform) and all the optimizations (speed, caching, computation) the `evaluate()` function or `deepeval test run` offers.
+
+## How Is It Calculated?​
+
+The `ConversationCompletenessMetric` score is calculated according to the following equation:
+
+Conversation Completeness=Number of Satisfied User Intentions in ConversationTotal Number of User Intentions in Conversation\text{Conversation Completeness} = \frac{\text{Number of Satisfied User Intentions in Conversation}}{\text{Total Number of User Intentions in Conversation}}Conversation Completeness=Total Number of User Intentions in ConversationNumber of Satisfied User Intentions in Conversation​
+
+The `ConversationCompletenessMetric` assumes that a conversion is only complete if user intentions, such as asking for help to an LLM chatbot, are met by the LLM chatbot. Hence, the `ConversationCompletenessMetric` first uses an LLM to extract a list of high level user intentions found in the list of `turns`, before using the same LLM to determine whether each intention was met and/or satisfied throughout the conversation.
+
+[Edit this page](https://github.com/confident-ai/deepeval/edit/main/docs/docs/metrics-conversation-completeness.mdx)
+
+Last updated on **Apr 12, 2025** by **Jeffrey Ip**

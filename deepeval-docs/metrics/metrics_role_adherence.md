@@ -1,0 +1,87 @@
+# Role Adherence
+
+  * [](/)
+  * Evaluation
+  * Metrics
+  * Conversational Metrics
+  * Role Adherence
+
+On this page
+
+# Role Adherence
+
+The role adherence metric is a conversational metric that determines whether your LLM chatbot is able to adhere to its given role **throughout a conversation**.
+
+tip
+
+The `RoleAdherenceMetric` is particular useful for a role-playing usecase.
+
+## Required Arguments​
+
+To use the `RoleAdherenceMetric`, you'll have to provide the following arguments when creating a [`ConversationalTestCase`](/docs/evaluation-test-cases#conversational-test-case):
+
+  * `turns`
+  * `chatbot_role`
+
+Additionally, each `LLMTestCase`s in `turns` requires the following arguments:
+
+  * `input`
+  * `actual_output`
+
+## Example​
+
+Let's take this conversation as an example:
+    
+    
+    from deepeval import evaluate  
+    from deepeval.test_case import LLMTestCase, ConversationalTestCase  
+    from deepeval.metrics import RoleAdherenceMetric  
+      
+    convo_test_case = ConversationalTestCase(  
+        chatbot_role="...",  
+        turns=[LLMTestCase(input="...", actual_output="...")]  
+    )  
+    metric = RoleAdherenceMetric(threshold=0.5)  
+      
+    # To run metric as a standalone  
+    # metric.measure(convo_test_case)  
+    # print(metric.score, metric.reason)  
+      
+    evaluate(test_cases=[convo_test_case], metrics=[metric])  
+    
+
+There are **SIX** optional parameters when creating a `RoleAdherenceMetric`:
+
+  * [Optional] `threshold`: a float representing the minimum passing threshold, defaulted to 0.5.
+  * [Optional] `model`: a string specifying which of OpenAI's GPT models to use, **OR** [any custom LLM model](/docs/metrics-introduction#using-a-custom-llm) of type `DeepEvalBaseLLM`. Defaulted to 'gpt-4o'.
+  * [Optional] `include_reason`: a boolean which when set to `True`, will include a reason for its evaluation score. Defaulted to `True`.
+  * [Optional] `strict_mode`: a boolean which when set to `True`, enforces a binary metric score: 1 for perfection, 0 otherwise. It also overrides the current threshold and sets it to 1. Defaulted to `False`.
+  * [Optional] `async_mode`: a boolean which when set to `True`, enables [concurrent execution within the `measure()` method.](/docs/metrics-introduction#measuring-metrics-in-async) Defaulted to `True`.
+  * [Optional] `verbose_mode`: a boolean which when set to `True`, prints the intermediate steps used to calculate said metric to the console, as outlined in the How Is It Calculated section. Defaulted to `False`.
+
+### As a standalone​
+
+You can also run the `RoleAdherenceMetric` on a single test case as a standalone, one-off execution.
+    
+    
+    ...  
+      
+    metric.measure(convo_test_case)  
+    print(metric.score, metric.reason)  
+    
+
+caution
+
+This is great for debugging or if you wish to build your own evaluation pipeline, but you will **NOT** get the benefits (testing reports, Confident AI platform) and all the optimizations (speed, caching, computation) the `evaluate()` function or `deepeval test run` offers.
+
+## How Is It Calculated?​
+
+The `RoleAdherenceMetric` score is calculated according to the following equation:
+
+Role Adherence=Number of Turns that Adhered to Chatbot Role in ConversationTotal Number of Turns in Conversation\text{Role Adherence} = \frac{\text{Number of Turns that Adhered to Chatbot Role in Conversation}}{\text{Total Number of Turns in Conversation}}Role Adherence=Total Number of Turns in ConversationNumber of Turns that Adhered to Chatbot Role in Conversation​
+
+The `RoleAdherenceMetric` first loops through each turn individually before using an LLM to determine which one of them does not adhere to the specified `chatbot_role` using previous turns as context.
+
+[Edit this page](https://github.com/confident-ai/deepeval/edit/main/docs/docs/metrics-role-adherence.mdx)
+
+Last updated on **Apr 12, 2025** by **Jeffrey Ip**

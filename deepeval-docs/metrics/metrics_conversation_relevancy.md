@@ -1,0 +1,80 @@
+# Conversation Relevancy
+
+  * [](/)
+  * Evaluation
+  * Metrics
+  * Conversational Metrics
+  * Conversation Relevancy
+
+On this page
+
+# Conversation Relevancy
+
+The conversation relevancy metric is a conversational metric that determines whether your LLM chatbot is able to consistently generate relevant responses **throughout a conversation**.
+
+## Required Arguments​
+
+To use the `ConversationRelevancyMetric`, you'll have to provide the following arguments when creating a [`ConversationalTestCase`](/docs/evaluation-test-cases#conversational-test-case):
+
+  * `turns`
+
+Additionally, each `LLMTestCase`s in `turns` requires the following arguments:
+
+  * `input`
+  * `actual_output`
+
+## Example​
+    
+    
+    from deepeval import evaluate  
+    from deepeval.test_case import LLMTestCase, ConversationalTestCase  
+    from deepeval.metrics import ConversationRelevancyMetric  
+      
+    convo_test_case = ConversationalTestCase(  
+        turns=[LLMTestCase(input="...", actual_output="...")]  
+    )  
+    metric = ConversationRelevancyMetric(threshold=0.5)  
+      
+    # To run metric as a standalone  
+    # metric.measure(convo_test_case)  
+    # print(metric.score, metric.reason)  
+      
+    evaluate(test_cases=[convo_test_case], metrics=[metric])  
+    
+
+There are **SEVEN** optional parameters when creating a `ConversationRelevancyMetric`:
+
+  * [Optional] `threshold`: a float representing the minimum passing threshold, defaulted to 0.5.
+  * [Optional] `model`: a string specifying which of OpenAI's GPT models to use, **OR** [any custom LLM model](/docs/metrics-introduction#using-a-custom-llm) of type `DeepEvalBaseLLM`. Defaulted to 'gpt-4o'.
+  * [Optional] `include_reason`: a boolean which when set to `True`, will include a reason for its evaluation score. Defaulted to `True`.
+  * [Optional] `strict_mode`: a boolean which when set to `True`, enforces a binary metric score: 1 for perfection, 0 otherwise. It also overrides the current threshold and sets it to 1. Defaulted to `False`.
+  * [Optional] `async_mode`: a boolean which when set to `True`, enables [concurrent execution within the `measure()` method.](/docs/metrics-introduction#measuring-metrics-in-async) Defaulted to `True`.
+  * [Optional] `verbose_mode`: a boolean which when set to `True`, prints the intermediate steps used to calculate said metric to the console, as outlined in the How Is It Calculated section. Defaulted to `False`.
+  * [Optional] `window_size`: an integer which defines the size of the sliding window of turns used during evaluation. Defaulted to 3.
+
+### As a standalone​
+
+You can also run the `ContextualRelevancyMetric` on a single test case as a standalone, one-off execution.
+    
+    
+    ...  
+      
+    metric.measure(convo_test_case)  
+    print(metric.score, metric.reason)  
+    
+
+caution
+
+This is great for debugging or if you wish to build your own evaluation pipeline, but you will **NOT** get the benefits (testing reports, Confident AI platform) and all the optimizations (speed, caching, computation) the `evaluate()` function or `deepeval test run` offers.
+
+## How Is It Calculated?​
+
+The `ConversationRelevancyMetric` score is calculated according to the following equation:
+
+Conversation Relevancy=Number of Turns with Relevant Actual OutputsTotal Number of Turns\text{Conversation Relevancy} = \frac{\text{Number of Turns with Relevant Actual Outputs}}{\text{Total Number of Turns}}Conversation Relevancy=Total Number of TurnsNumber of Turns with Relevant Actual Outputs​
+
+The `ConversationRelevancyMetric` first constructs a sliding windows of turns for each turn, before using an LLM to determine whether the last turn in each sliding window has an `actual_output` that is relevant to the `input` based on previous conversational context found in the sliding window.
+
+[Edit this page](https://github.com/confident-ai/deepeval/edit/main/docs/docs/metrics-conversation-relevancy.mdx)
+
+Last updated on **Apr 12, 2025** by **Jeffrey Ip**

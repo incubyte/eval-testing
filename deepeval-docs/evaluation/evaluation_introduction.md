@@ -1,0 +1,291 @@
+# Introduction
+
+  * [](/)
+  * Evaluation
+  * Introduction
+
+On this page
+
+# Introduction
+
+## Quick Summary​
+
+Evaluation refers to the process of testing your LLM application outputs, and requires the following components:
+
+  * Test cases
+  * Metrics
+  * Evaluation dataset
+
+Here's a diagram of what an ideal evaluation workflow looks like using `deepeval`:
+
+![](https://d2lsxfc3p6r9rv.cloudfront.net/workflow.png)
+
+Your test cases will typically be in a single python file, and executing them will be as easy as running `deepeval test run`:
+    
+    
+    deepeval test run test_example.py  
+    
+
+tip
+
+[Click here](/tutorials/tutorial-introduction) for an end-to-end **tutorial on how to evaluate an LLM medical chatbot** using `deepeval`.
+
+## Metrics​
+
+`deepeval` offers 14+ evaluation metrics, most of which are evaluated using LLMs (visit the [metrics section](/docs/metrics-introduction#types-of-metrics) to learn why).
+    
+    
+    from deepeval.metrics import AnswerRelevancyMetric  
+      
+    answer_relevancy_metric = AnswerRelevancyMetric()  
+    
+
+You'll need to create a test case to run `deepeval`'s metrics.
+
+## Test Cases​
+
+In `deepeval`, a test case allows you to use evaluation metrics you have defined to unit test LLM applications.
+    
+    
+    from deepeval.test_case import LLMTestCase  
+      
+    test_case = LLMTestCase(  
+      input="Who is the current president of the United States of America?",  
+      actual_output="Joe Biden",  
+      retrieval_context=["Joe Biden serves as the current president of America."]  
+    )  
+    
+
+In this example, `input` mimics an user interaction with a RAG-based LLM application, where `actual_output` is the output of your LLM application and `retrieval_context` is the retrieved nodes in your RAG pipeline. Creating a test case allows you to evaluate using `deepeval`'s default metrics:
+    
+    
+    from deepeval.test_case import LLMTestCase  
+    from deepeval.metrics import AnswerRelevancyMetric  
+      
+    answer_relevancy_metric = AnswerRelevancyMetric()  
+    test_case = LLMTestCase(  
+      input="Who is the current president of the United States of America?",  
+      actual_output="Joe Biden",  
+      retrieval_context=["Joe Biden serves as the current president of America."]  
+    )  
+      
+    answer_relevancy_metric.measure(test_case)  
+    print(answer_relevancy_metric.score)  
+    
+
+## Datasets​
+
+Datasets in `deepeval` is a collection of test cases. It provides a centralized interface for you to evaluate a collection of test cases using one or multiple metrics.
+    
+    
+    from deepeval.test_case import LLMTestCase  
+    from deepeval.dataset import EvaluationDataset  
+    from deepeval.metrics import AnswerRelevancyMetric  
+      
+    answer_relevancy_metric = AnswerRelevancyMetric()  
+    test_case = LLMTestCase(  
+      input="Who is the current president of the United States of America?",  
+      actual_output="Joe Biden",  
+      retrieval_context=["Joe Biden serves as the current president of America."]  
+    )  
+      
+    dataset = EvaluationDataset(test_cases=[test_case])  
+    dataset.evaluate([answer_relevancy_metric])  
+    
+
+note
+
+You don't need to create an evaluation dataset to evaluate individual test cases. Visit the [test cases section](/docs/evaluation-test-cases#assert-a-test-case) to learn how to assert inidividual test cases.
+
+## Synthesizer​
+
+In `deepeval`, the `Synthesizer` allows you to generate synthetic datasets. This is especially helpful if you don't have production data or you don't have a golden dataset to evaluate with.
+    
+    
+    from deepeval.synthesizer import Synthesizer  
+    from deepeval.dataset import EvaluationDataset  
+      
+    synthesizer = Synthesizer()  
+    goldens = synthesizer.generate_goldens_from_docs(document_paths=['example.txt', 'example.docx', 'example.pdf'])  
+      
+    dataset = EvaluationDataset(goldens=goldens)  
+    
+
+info
+
+`deepeval`'s `Synthesizer` is highly customizable, and you can learn more about it [here.](/docs/synthesizer-introduction)
+
+## Evaluating With Pytest​
+
+caution
+
+Although `deepeval` integrates with Pytest, we highly recommend you to **AVOID** executing `LLMTestCase`s directly via the `pytest` command to avoid any unexpected errors.
+
+`deepeval` allows you to run evaluations as if you're using Pytest via our Pytest integration. Simply create a test file:
+    
+    
+    from deepeval import assert_test  
+    from deepeval.test_case import LLMTestCase  
+    from deepeval.metrics import AnswerRelevancyMetric  
+      
+    dataset = EvaluationDataset(test_cases=[...])  
+      
+    @pytest.mark.parametrize(  
+        "test_case",  
+        dataset,  
+    )  
+    def test_customer_chatbot(test_case: LLMTestCase):  
+        answer_relevancy_metric = AnswerRelevancyMetric()  
+        assert_test(test_case, [answer_relevancy_metric])  
+    
+
+And run the test file in the CLI:
+    
+    
+    deepeval test run test_example.py  
+    
+
+There are **TWO** mandatory and **ONE** optional parameter when calling the `assert_test()` function:
+
+  * `test_case`: an `LLMTestCase`
+  * `metrics`: a list of metrics of type `BaseMetric`
+  * [Optional] `run_async`: a boolean which when set to `True`, enables concurrent evaluation of all metrics. Defaulted to `True`.
+
+info
+
+`@pytest.mark.parametrize` is a decorator offered by Pytest. It simply loops through your `EvaluationDataset` to evaluate each test case individually.
+
+### Parallelization​
+
+Evaluate each test case in parallel by providing a number to the `-n` flag to specify how many processes to use.
+    
+    
+    deepeval test run test_example.py -n 4  
+    
+
+### Cache​
+
+Provide the `-c` flag (with no arguments) to read from the local `deepeval` cache instead of re-evaluating test cases on the same metrics.
+    
+    
+    deepeval test run test_example.py -c  
+    
+
+info
+
+This is extremely useful if you're running large amounts of test cases. For example, lets say you're running 1000 test cases using `deepeval test run`, but you encounter an error on the 999th test case. The cache functionality would allow you to skip all the previously evaluated 999 test cases, and just evaluate the remaining one.
+
+### Ignore Errors​
+
+The `-i` flag (with no arguments) allows you to ignore errors for metrics executions during a test run. An example of where this is helpful is if you're using a custom LLM and often find it generating invalid JSONs that will stop the execution of the entire test run.
+    
+    
+    deepeval test run test_example.py -i  
+    
+
+tip
+
+You can combine differnet flags, such as the `-i`, `-c`, and `-n` flag to execute any uncached test cases in parallel while ignoring any errors along the way:
+    
+    
+    deepeval test run test_example.py -i -c -n 2  
+    
+
+### Verbose Mode​
+
+The `-v` flag (with no arguments) allows you to turn on [`verbose_mode` for all metrics](/docs/metrics-introduction#debugging-a-metric) ran using `deepeval test run`. Not supplying the `-v` flag will default each metric's `verbose_mode` to its value at instantiation.
+    
+    
+    deepeval test run test_example.py -v  
+    
+
+note
+
+When a metric's `verbose_mode` is `True`, it prints the intermediate steps used to calculate said metric to the console during evaluation.
+
+### Skip Test Cases​
+
+The `-s` flag (with no arguments) allows you to skip metric executions where the test case has missing//insufficient parameters (such as `retrieval_context`) that is required for evaluation. An example of where this is helpful is if you're using a metric such as the `ContextualPrecisionMetric` but don't want to apply it when the `retrieval_context` is `None`.
+    
+    
+    deepeval test run test_example.py -s  
+    
+
+### Identifier​
+
+The `-id` flag followed by a string allows you to name test runs and better identify them on [Confident AI](https://confident-ai.com). An example of where this is helpful is if you're running automated deployment pipelines, have deployment IDs, or just want a way to identify which test run is which for comparison purposes.
+    
+    
+    deepeval test run test_example.py -id "My Latest Test Run"  
+    
+
+### Display Mode​
+
+The `-d` flag followed by a string of "all", "passing", or "failing" allows you to display only certain test cases in the terminal. For example, you can display "failing" only if you only care about the failing test cases.
+    
+    
+    deepeval test run test_example.py -d "failing"  
+    
+
+### Repeats​
+
+Repeat each test case by providing a number to the `-r` flag to specify how many times to rerun each test case.
+    
+    
+    deepeval test run test_example.py -r 2  
+    
+
+### Hooks​
+
+`deepeval`'s Pytest integration allosw you to run custom code at the end of each evaluation via the `@deepeval.on_test_run_end` decorator:
+
+test_example.py
+    
+    
+    ...  
+      
+    @deepeval.on_test_run_end  
+    def function_to_be_called_after_test_run():  
+        print("Test finished!")  
+    
+
+## Evaluating Without Pytest​
+
+Alternately, you can use `deepeval`'s `evaluate` function. This approach avoids the CLI (if you're in a notebook environment), and allows for parallel test execution as well.
+    
+    
+    from deepeval import evaluate  
+    from deepeval.metrics import AnswerRelevancyMetric  
+    from deepeval.dataset import EvaluationDataset  
+      
+    dataset = EvaluationDataset(test_cases=[...])  
+    answer_relevancy_metric = AnswerRelevancyMetric()  
+      
+    evaluate(dataset, [answer_relevancy_metric])  
+    
+
+There are **TWO** mandatory and **THIRTEEN** optional arguments when calling the `evaluate()` function:
+
+  * `test_cases`: a list of `LLMTestCase`s **OR** `ConversationalTestCase`s, or an `EvaluationDataset`. You cannot evaluate `LLMTestCase`/`MLLMTestCase`s and `ConversationalTestCase`s in the same test run.
+  * `metrics`: a list of metrics of type `BaseMetric`.
+  * [Optional] `hyperparameters`: a dict of type `dict[str, Union[str, int, float]]`. You can log any arbitrary hyperparameter associated with this test run to pick the best hyperparameters for your LLM application on Confident AI.
+  * [Optional] `identifier`: a string that allows you to better identify your test run on Confident AI.
+  * [Optional] `run_async`: a boolean which when set to `True`, enables concurrent evaluation of test cases **AND** metrics. Defaulted to `True`.
+  * [Optional] `throttle_value`: an integer that determines how long (in seconds) to throttle the evaluation of each test case. You can increase this value if your evaluation model is running into rate limit errors. Defaulted to 0.
+  * [Optional] `max_concurrent`: an integer that determines the maximum number of test cases that can be ran in parallel at any point in time. You can decrease this value if your evaluation model is running into rate limit errors. Defaulted to 100.
+  * [Optional] `skip_on_missing_params`: a boolean which when set to `True`, skips all metric executions for test cases with missing parameters. Defaulted to `False`.
+  * [Optional] `ignore_errors`: a boolean which when set to `True`, ignores all exceptions raised during metrics execution for each test case. Defaulted to `False`.
+  * [Optional] `verbose_mode`: a optional boolean which when **IS NOT** `None`, overrides each [metric's `verbose_mode` value](/docs/metrics-introduction#debugging-a-metric). Defaulted to `None`.
+  * [Optional] `write_cache`: a boolean which when set to `True`, uses writes test run results to **DISK**. Defaulted to `True`.
+  * [Optional] `display`: a str of either `"all"`, `"failing"` or `"passing"`, which allows you to selectively decide which type of test cases to display as the final result. Defaulted to `"all"`.
+  * [Optional] `use_cache`: a boolean which when set to `True`, uses cached test run results instead. Defaulted to `False`.
+  * [Optional] `show_indicator`: a boolean which when set to `True`, shows the evaluation progress indicator for each individual metric. Defaulted to `True`.
+  * [Optional] `print_results`: a boolean which when set to `True`, prints the result of each evaluation. Defaulted to `True`.
+
+tip
+
+You can also replace `dataset` with a list of test cases, as shown in the [test cases section.](/docs/evaluation-test-cases#evaluate-test-cases-in-bulk)
+
+[Edit this page](https://github.com/confident-ai/deepeval/edit/main/docs/docs/evaluation-introduction.mdx)
+
+Last updated on **Apr 12, 2025** by **Jeffrey Ip**

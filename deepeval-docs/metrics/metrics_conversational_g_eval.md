@@ -1,0 +1,104 @@
+# Conversational G-Eval
+
+  * [](/)
+  * Evaluation
+  * Metrics
+  * Conversational Metrics
+  * Conversational G-Eval
+
+On this page
+
+# Conversational G-Eval
+
+The conversationl G-Eval is an adopted version of `deepeval`'s popular [`GEval` metric](/docs/metrics-llm-evals) but for evaluating entire conversations instead. It is currently the best way to define custom critera to evaluate multi-turn conversations in `deepeval`. By defining a custom `ConversationalGEval`, you can easily determine whether your LLM chatbot is able to consistently generate responses that are up to standard with your custom criteria **throughout a conversation**.
+
+## Required Arguments​
+
+To use the `ConversationalGEval` metric, you'll have to provide the following arguments when creating a [`ConversationalTestCase`](/docs/evaluation-test-cases#conversational-test-case):
+
+  * `turns`
+
+Additionally, each `LLMTestCase`s in `turns` requires the following arguments:
+
+  * `input`
+  * `actual_output`
+
+You'll also need to supply any additional arguments such as `expected_output` and `context` if your evaluation criteria depends on these parameters.
+
+## Example​
+
+To create a custom metric that evaluates entire LLM conversations, simply instantiate a `ConversationalGEval` class and define an evaluation criteria in everyday language:
+    
+    
+    from deepeval import evaluate  
+    from deepeval.test_case import LLMTestCase, LLMTestCaseParams, ConversationalTestCase  
+    from deepeval.metrics import ConversationalGEval  
+      
+    convo_test_case = ConversationalTestCase(  
+        turns=[LLMTestCase(input="...", actual_output="...")]  
+    )  
+    professionalism_metric = ConversationalGEval(  
+        name="Professionalism",  
+        criteria="""Given the 'actual output' are generated responses from an  
+        LLM chatbot and 'input' are user queries to the chatbot, determine whether  
+        the chatbot has acted professionally throughout a conversation.""",  
+        # NOTE: you can only provide either criteria or evaluation_steps, and not both  
+        evaluation_steps=[  
+            "Check whether each LLM 'actual output' is professional with regards to the user 'input'",  
+            "Being professional means no profanity, no toxic language, and consistently says 'please' or 'thank you'.",  
+            "Penalize heavily if exclaimation marks are used in a rude demeanour."  
+        ],  
+        evaluation_params=[LLMTestCaseParams.INPUT, LLMTestCaseParams.ACTUAL_OUTPUT],  
+    )  
+      
+    # To run metric as a standalone  
+    # metric.measure(convo_test_case)  
+    # print(metric.score, metric.reason)  
+      
+    evaluate(test_cases=[convo_test_case], metrics=[metric])  
+    
+
+There are **THREE** mandatory and **SIX** optional parameters required when instantiating an `ConversationalGEval` class:
+
+  * `name`: name of metric. This will **not** affect the evaluation.
+  * `criteria`: a description outlining the specific evaluation aspects for each test case.
+  * `evaluation_params`: a list of type `LLMTestCaseParams`. Include only the parameters that are relevant for evaluation.
+  * [Optional] `evaluation_steps`: a list of strings outlining the exact steps the LLM should take for evaluation. If `evaluation_steps` is not provided, `ConversationalGEval` will generate a series of `evaluation_steps` on your behalf based on the provided `criteria`. You can only provide either `evaluation_steps` **OR** `criteria`, and not both.
+  * [Optional] `threshold`: the passing threshold, defaulted to 0.5.
+  * [Optional] `model`: a string specifying which of OpenAI's GPT models to use, **OR** [any custom LLM model](/docs/metrics-introduction#using-a-custom-llm) of type `DeepEvalBaseLLM`. Defaulted to 'gpt-4o'.
+  * [Optional] `strict_mode`: a boolean which when set to `True`, enforces a binary metric score: 1 for perfection, 0 otherwise. It also overrides the current threshold and sets it to 1. Defaulted to `False`.
+  * [Optional] `async_mode`: a boolean which when set to `True`, enables [concurrent execution within the `measure()` method.](/docs/metrics-introduction#measuring-metrics-in-async) Defaulted to `True`.
+  * [Optional] `verbose_mode`: a boolean which when set to `True`, prints the intermediate steps used to calculate said metric to the console, as outlined in the How Is It Calculated section. Defaulted to `False`.
+
+danger
+
+For accurate and valid results, only test case parameters that are mentioned in `criteria`/`evaluation_steps` should be included as a member of `evaluation_params`.
+
+### As a standalone​
+
+You can also run the `ConversationalGEval` on a single test case as a standalone, one-off execution.
+    
+    
+    ...  
+      
+    metric.measure(convo_test_case)  
+    print(metric.score, metric.reason)  
+    
+
+caution
+
+This is great for debugging or if you wish to build your own evaluation pipeline, but you will **NOT** get the benefits (testing reports, Confident AI platform) and all the optimizations (speed, caching, computation) the `evaluate()` function or `deepeval test run` offers.
+
+## How Is It Calculated?​
+
+The `ConversationalGEval` is an adapted version of [`GEval`](/docs/metrics-llm-evals), so alike `GEval`, the `ConversationalGEval` metric is a two-step algorithm that first generates a series of `evaluation_steps` using chain of thoughts (CoTs) based on the given `criteria`, before using the generated `evaluation_steps` to determine the final score using the `evaluation_params` presented in an LLMTestCase of each turn.
+
+Unlike regular `GEval` though, the `ConversationalGEval` takes the entire conversation history into account during evaluation.
+
+tip
+
+Similar to the original [G-Eval paper](https://arxiv.org/abs/2303.16634), the `ConversationalGEval` metric uses the probabilities of the LLM output tokens to normalize the score by calculating a weighted summation. This step was introduced in the paper to minimize bias in LLM scoring, and is automatically handled by `deepeval` (unless you're using a custom LLM).
+
+[Edit this page](https://github.com/confident-ai/deepeval/edit/main/docs/docs/metrics-conversational-g-eval.mdx)
+
+Last updated on **Apr 12, 2025** by **Jeffrey Ip**

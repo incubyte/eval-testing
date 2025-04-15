@@ -1,0 +1,335 @@
+# Datasets
+
+  * [](/)
+  * Evaluation
+  * Datasets
+
+On this page
+
+# Datasets
+
+## Quick Summary​
+
+In `deepeval`, an evaluation dataset, or just dataset, is a collection of `LLMTestCase`s and/or `Golden`s. There are three approaches to evaluating datasets in `deepeval`:
+
+  1. using `@pytest.mark.parametrize` and `assert_test`
+  2. using `evaluate`
+  3. using `confident_evaluate` (evaluates on Confident AI instead of locally)
+
+note
+
+Evaluating a dataset means exactly the same as evaluating your LLM system, because by definition a dataset contains all the information produced by your LLM needed for evaluation.
+
+You should also aim to group test cases of a certain category together in an `EvaluationDataset`. This will allow you to follow best practices:
+
+  * **Ensure telling test coverage:** A well-structured dataset should reflect the full range of real-world inputs the LLM is expected to handle. This includes diverse linguistic styles, varying levels of complexity, and edge cases that challenge the model’s robustness. Don't just include test cases that are easy to pass.
+  * **Focused, quantitative test cases:** A dataset should be designed with a clear evaluation scope while allowing for multiple relevant performance metrics. Rather than being overly broad or too narrow, it should be structured to provide meaningful, statistically reliable insights.
+  * **Define clear objectives:** Each dataset should align with a well-defined evaluation goal, ensuring that test cases serve a specific analytical purpose. While organizing test cases into distinct datasets can provide clarity, unnecessary fragmentation should be avoided if multiple aspects of an LLM’s performance are best assessed together.
+
+info
+
+If you don't already have an `EvaluationDataset`, a great starting point is to simply write down the prompts you're currently using to manually eyeball your LLM outputs. You can also do this on [Confident AI](https://confident-ai.com) which integrates 100% with `deepeval`:
+
+Full documentation for datasets on Confident AI [here.](/confident-ai/confident-ai-evaluation-dataset-management)
+
+## Create A Dataset​
+
+An `EvaluationDataset` in `deepeval` is simply a collection of `LLMTestCase`s and/or `Golden`s.
+
+info
+
+A `Golden` is extremely very similar to an `LLMTestCase`, but they are more flexible as they do not require an `actual_output` at initialization. On the flip side, whilst test cases are always ready for evaluation, a golden isn't.
+
+### With Test Cases​
+    
+    
+    from deepeval.test_case import LLMTestCase  
+    from deepeval.dataset import EvaluationDataset  
+      
+    first_test_case = LLMTestCase(input="...", actual_output="...")  
+    second_test_case = LLMTestCase(input="...", actual_output="...")  
+      
+    test_cases = [first_test_case, second_test_case]  
+      
+    dataset = EvaluationDataset(test_cases=test_cases)  
+    
+
+You can also append a test case to an `EvaluationDataset` through the `test_cases` instance variable:
+    
+    
+    ...  
+      
+    dataset.test_cases.append(test_case)  
+    # or  
+    dataset.add_test_case(test_case)  
+    
+
+### With Goldens​
+
+You should opt to initialize `EvaluationDataset`s with goldens if you're looking to generate LLM outputs at evaluation time. This usually means your original dataset does not contain precomputed outputs, but only the inputs you want to evaluate your LLM (application) on.
+    
+    
+    from deepeval.dataset import EvaluationDataset, Golden  
+      
+    first_golden = Golden(input="...")  
+    second_golden = Golden(input="...")  
+      
+    dataset = EvaluationDataset(goldens=goldens)  
+    print(dataset.goldens)  
+    
+
+tip
+
+A `Golden` and `LLMTestCase` contains almost an identical class signature, so technically you can also supply other parameters such as the `actual_output` when creating a `Golden`.
+
+## Generate A Dataset​
+
+caution
+
+We highly recommend you to checkout the [`Synthesizer`](/docs/synthesizer-introduction) page to see the customizations available and how data synthesization work in `deepeval`. All methods in an `EvaluationDataset` that can be used to generate goldens uses the `Synthesizer` under the hood and has exactly the same function signature as corresponding methods in the `Synthesizer`.
+
+`deepeval` offers anyone the ability to easily generate synthetic datasets from documents locally on your machine. This is especially helpful if you don't have an evaluation dataset prepared beforehand.
+    
+    
+    from deepeval.dataset import EvaluationDataset  
+      
+    dataset = EvaluationDataset()  
+    dataset.generate_goldens_from_docs(document_paths=['example.txt', 'example.docx', 'example.pdf'])  
+    
+
+In this example, we've used the `generate_goldens_from_docs` method, which one one of the four generation methods offered by `deepeval`'s `Synthesizer`. The four methods include:
+
+  * [`generate_goldens_from_docs()`](/docs/synthesizer-generate-from-docs): useful for generating goldens to evaluate your LLM application based on contexts extracted from your knowledge base in the form of documents.
+  * [`generate_goldens_from_contexts()`](/docs/synthesizer-generate-from-contexts): useful for generating goldens to evaluate your LLM application based on a list of prepared context.
+  * [`generate_goldens_from_scratch()`](/docs/synthesizer-generate-from-scratch): useful for generating goldens to evaluate your LLM application without relying on contexts from a knowledge base.
+  * [`generate_goldens_from_goldens()`](/docs/synthesizer-generate-from-goldens): useful for generating goldens by augmenting a known set of goldens.
+
+Under the hood, these 4 methods calls the corresponding methods in `deepeval`'s `Synthesizer` with the exact same parameters, with an addition of a `synthesizer` parameter for you to customize your generation pipeline.
+    
+    
+    from deepeval.dataset import EvaluationDataset  
+    from deepeval.synthesizer import Synthesizer  
+    ...  
+      
+    # Use gpt-3.5-turbo instead  
+    synthesizer = Synthesizer(model="gpt-3.5-turbo")  
+    dataset.generate_goldens_from_docs(  
+        synthesizer=synthesizer,  
+        document_paths=['example.pdf'],  
+        max_goldens_per_document=2  
+    )  
+    
+
+info
+
+`deepeval`'s `Synthesizer` uses a series of evolution techniques to complicate and make generated goldens more realistic to human prepared data. For more information on how `deepeval`'s `Synthesizer` works, visit the [synthesizer section.](/docs/synthesizer-introduction#how-does-it-work)
+
+## Save Your Dataset​
+
+You can save your dataset locally to either a CSV or JSON file by using the `save_as()` method:
+    
+    
+    ...  
+      
+    dataset.save_as(file_type="csv", directory="./deepeval-test-dataset", include_test_cases=True)  
+    
+
+There are **TWO** mandatory and **ONE** optional parameter when calling the `save_as()` method:
+
+  * `file_type`: a string of either `"csv"` or `"json"` and specifies which file format to save `Golden`s in.
+  * `directory`: a string specifying the path of the directory you wish to save `Golden`s at.
+  * `include_test_cases`: a boolean which when set to `True`, will also save any test cases within your dataset. Defaulted to `False`.
+
+note
+
+By default the `save_as()` method only saves the `Golden`s within your `EvaluationDataset` to file. If you wish to save test cases as well, set `include_test_cases` to `True`.
+
+## Load an Existing Dataset​
+
+`deepeval` offers support for loading datasetes stored in JSON files, CSV files, and hugging face datasets into an `EvaluationDataset` as either test cases or goldens.
+
+### From Confident AI​
+
+You can load entire datasets on Confident AI's cloud in one line of code.
+    
+    
+    from deepeval.dataset import EvaluationDataset  
+      
+    dataset = EvaluationDataset()  
+    dataset.pull(alias="My Evals Dataset")  
+    
+
+Did Your Know?
+
+You can **create, annotate, and comment** on datasets on Confident AI? You can also upload datasets in CSV format, or push synthetic datasets created in `deepeval` to Confident AI in one line of code.
+
+For more information, visit the [Confident AI datasets section.](/confident-ai/confident-ai-manage-datasets)
+
+### From JSON​
+
+You can loading an existing `EvaluationDataset` you might have generated elsewhere by supplying a `file_path` to your `.json` file as **either test cases or goldens**. Your `.json` file should contain an array of objects (or list of dictionaries).
+    
+    
+    from deepeval.dataset import EvaluationDataset  
+      
+    dataset = EvaluationDataset()  
+      
+    # Add as test cases  
+    dataset.add_test_cases_from_json_file(  
+        # file_path is the absolute path to you .json file  
+        file_path="example.json",  
+        input_key_name="query",  
+        actual_output_key_name="actual_output",  
+        expected_output_key_name="expected_output",  
+        context_key_name="context",  
+        retrieval_context_key_name="retrieval_context",  
+    )  
+      
+    # Or, add as goldens  
+    dataset.add_goldens_from_json_file(  
+        # file_path is the absolute path to you .json file  
+        file_path="example.json",  
+        input_key_name="query"  
+    )  
+    
+
+info
+
+Loading datasets as goldens are especially helpful if you're looking to generate LLM `actual_output`s at evaluation time. You might find yourself in this situation if you are generating data for testing or using historical data from production.
+
+### From CSV​
+
+You can add test cases or goldens into your `EvaluationDataset` by supplying a `file_path` to your `.csv` file. Your `.csv` file should contain rows that can be mapped into `LLMTestCase`s through their column names.
+
+Remember, parameters such as `context` should be a list of strings and in the context of CSV files, it means you have to supply a `context_col_delimiter` argument to tell `deepeval` how to split your context cells into a list of strings.
+    
+    
+    from deepeval.dataset import EvaluationDataset  
+      
+    dataset = EvaluationDataset()  
+      
+    # Add as test cases  
+    dataset.add_test_cases_from_csv_file(  
+        # file_path is the absolute path to you .csv file  
+        file_path="example.csv",  
+        input_col_name="query",  
+        actual_output_col_name="actual_output",  
+        expected_output_col_name="expected_output",  
+        context_col_name="context",  
+        context_col_delimiter= ";",  
+        retrieval_context_col_name="retrieval_context",  
+        retrieval_context_col_delimiter= ";"  
+    )  
+      
+    # Or, add as goldens  
+    dataset.add_goldens_from_csv_file(  
+        # file_path is the absolute path to you .csv file  
+        file_path="example.csv",  
+        input_col_name="query"  
+    )  
+    
+
+note
+
+Since `expected_output`, `context`, `retrieval_context`, `tools_called`, and `expected_tools` are optional parameters for an `LLMTestCase`, these fields are similarily **optional** parameters when adding test cases from an existing dataset.
+
+## Evaluate Your Dataset Using `deepeval`​
+
+tip
+
+Before we begin, we highly recommend [logging into Confident AI](https://app.confident-ai.com) to keep track of all evaluation results created by `deepeval` on the cloud:
+    
+    
+    deepeval login  
+    
+
+### With Pytest​
+
+`deepeval` utilizes the `@pytest.mark.parametrize` decorator to loop through entire datasets.
+
+test_bulk.py
+    
+    
+    import deepeval  
+    from deepeval import assert_test  
+    from deepeval.test_case import LLMTestCase  
+    from deepeval.metrics import HallucinationMetric, AnswerRelevancyMetric  
+    from deepeval.dataset import EvaluationDataset  
+      
+      
+    dataset = EvaluationDataset(test_cases=[...])  
+      
+    @pytest.mark.parametrize(  
+        "test_case",  
+        dataset,  
+    )  
+    def test_customer_chatbot(test_case: LLMTestCase):  
+        hallucination_metric = HallucinationMetric(threshold=0.3)  
+        answer_relevancy_metric = AnswerRelevancyMetric(threshold=0.5)  
+        assert_test(test_case, [hallucination_metric, answer_relevancy_metric])  
+      
+      
+    @deepeval.on_test_run_end  
+    def function_to_be_called_after_test_run():  
+        print("Test finished!")  
+    
+
+info
+
+Iterating through an `dataset` object implicitly loops through the test cases in an `dataset`. To iterate through goldens, you can do it by accessing `dataset.goldens` instead.
+
+To run several tests cases at once in parallel, use the optional `-n` flag followed by a number (that determines the number of processes that will be used) when executing `deepeval test run`:
+    
+    
+    deepeval test run test_bulk.py -n 3  
+    
+
+### Without Pytest​
+
+You can use `deepeval`'s `evaluate` function to evaluate datasets. This approach avoids the CLI, but does not allow for parallel test execution.
+    
+    
+    from deepeval import evaluate  
+    from deepeval.metrics import HallucinationMetric, AnswerRelevancyMetric  
+    from deepeval.dataset import EvaluationDataset  
+      
+    dataset = EvaluationDataset(test_cases=[...])  
+    hallucination_metric = HallucinationMetric(threshold=0.3)  
+    answer_relevancy_metric = AnswerRelevancyMetric(threshold=0.5)  
+      
+    dataset.evaluate([hallucination_metric, answer_relevancy_metric])  
+      
+    # You can also call the evaluate() function directly  
+    evaluate(dataset, [hallucination_metric, answer_relevancy_metric])  
+    
+
+info
+
+Visit the [test cases section](/docs/evaluation-test-cases) to learn what argument the `evaluate()` function accepts.
+
+## Evaluate Your Dataset on Confident AI​
+
+Instead of running evaluations locally using your own evaluation LLMs via `deepeval`, you can choose to run evaluations on Confident AI's infrastructure instead. First, [login to Confident AI](/confident-ai/confident-ai-introduction#login-to-confident-ai):
+    
+    
+    deepeval login  
+    
+
+Then, define metrics by [creating an experiment](/confident-ai/confident-ai-testing-n-evaluation-experiments#creating-an-experiment) on Confident AI. You can start running evaluations immediately by simply sending over your evaluation dataset and providing the name of the experiment you previously created via `deepeval`:
+    
+    
+    from deepeval import confident_evaluate  
+    from deepeval.dataset import EvaluationDataset  
+      
+    dataset = EvaluationDataset(test_cases=[...])  
+      
+    confident_evaluate(experiment_name="My First Experiment", dataset)  
+    
+
+tip
+
+You can find the full tutorial on running evaluations on Confident AI [here.](/confident-ai/confident-ai-testing-n-evaluation-experiments)
+
+[Edit this page](https://github.com/confident-ai/deepeval/edit/main/docs/docs/evaluation-datasets.mdx)
+
+Last updated on **Apr 14, 2025** by **Jeffrey Ip**

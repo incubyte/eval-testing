@@ -1,0 +1,81 @@
+# Multimodal Contextual Relevancy
+
+  * [](/)
+  * Evaluation
+  * Metrics
+  * Multimodal Metrics
+  * Multimodal Contextual Relevancy
+
+On this page
+
+# Multimodal Contextual Relevancy
+
+The multimodal contextual relevancy metric measures the quality of your multimodal RAG pipeline's retriever by evaluating the overall relevance of the information presented in your `retrieval_context` for a given `input`. `deepeval`'s multimodal contextual relevancy metric is a self-explaining MLLM-Eval, meaning it outputs a reason for its metric score.
+
+info
+
+The **Multimodal Contextual Relevancy** is the multimodal adaptation of DeepEval's [contextual relevancy metric](/docs/metrics-contextual-relevancy). It accepts images in addition to text for the `input`, `actual_output`, and `retrieval_context`.
+
+## Required Arguments​
+
+To use the `MultimodalContextualRelevancyMetric`, you'll have to provide the following arguments when creating a [`MLLMTestCase`](/docs/evaluation-test-cases#mllm-test-case):
+
+  * `input`
+  * `actual_output`
+  * `retrieval_context`
+
+note
+
+Similar to `MultimodalContextualPrecisionMetric`, the `MultimodalContextualRelevancyMetric` uses `retrieval_context` from your multimodal RAG pipeline for evaluation.
+
+The `input` and `actual_output` are required to create an `MLLMTestCase` (and hence required by all metrics) even though they might not be used for metric calculation. Read the How Is It Calculated section below to learn more.
+
+## Example​
+    
+    
+    from deepeval import evaluate  
+    from deepeval.metrics import MultimodalContextualRelevancyMetric  
+    from deepeval.test_case import MLLMTestCase, MLLMImage  
+      
+    metric = MultimodalContextualRelevancyMetric()  
+    test_case = MLLMTestCase(  
+        input=["Tell me about some landmarks in France"],  
+        actual_output=[  
+            "France is home to iconic landmarks like the Eiffel Tower in Paris.",  
+            MLLMImage(...)  
+        ],  
+        retrieval_context=[  
+            MLLMImage(...),  
+            "The Eiffel Tower is a wrought-iron lattice tower built in the late 19th century.",  
+            MLLMImage(...)  
+        ],  
+    )  
+      
+    metric.measure(test_case)  
+    print(metric.score)  
+    print(metric.reason)  
+      
+    # or evaluate test cases in bulk  
+    evaluate([test_case], [metric])  
+    
+
+There are **SIX** optional parameters when creating a `MultimodalContextualRelevancyMetric`:
+
+  * [Optional] `threshold`: a float representing the minimum passing threshold, defaulted to 0.5.
+  * [Optional] `model`: a string specifying which of OpenAI's Multimodal GPT models to use, **OR** any custom MLLM model of type `DeepEvalBaseMLLM`. Defaulted to 'gpt-4o'.
+  * [Optional] `include_reason`: a boolean which when set to `True`, will include a reason for its evaluation score. Defaulted to `True`.
+  * [Optional] `strict_mode`: a boolean which when set to `True`, enforces a binary metric score: 1 for perfection, 0 otherwise. It also overrides the current threshold and sets it to 1. Defaulted to `False`.
+  * [Optional] `async_mode`: a boolean which when set to `True`, enables [concurrent execution within the `measure()` method.](/docs/metrics-introduction#measuring-metrics-in-async) Defaulted to `True`.
+  * [Optional] `verbose_mode`: a boolean which when set to `True`, prints the intermediate steps used to calculate said metric to the console, as outlined in the How Is It Calculated section. Defaulted to `False`.
+
+## How Is It Calculated?​
+
+The `MultimodalContextualRelevancyMetric` score is calculated according to the following equation:
+
+Multimodal Contextual Relevancy=Number of Relevant StatementsTotal Number of Statements\text{Multimodal Contextual Relevancy} = \frac{\text{Number of Relevant Statements}}{\text{Total Number of Statements}}Multimodal Contextual Relevancy=Total Number of StatementsNumber of Relevant Statements​
+
+Although similar to how the `MultimodalAnswerRelevancyMetric` is calculated, the `MultimodalContextualRelevancyMetric` first uses an MLLM to extract all statements and images in the `retrieval_context` instead, before using the same MLLM to classify whether each statement and image is relevant to the `input`.
+
+[Edit this page](https://github.com/confident-ai/deepeval/edit/main/docs/docs/multimodal-metrics-contextual-relevancy.mdx)
+
+Last updated on **Apr 12, 2025** by **Jeffrey Ip**
