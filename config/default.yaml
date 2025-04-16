@@ -1,0 +1,57 @@
+# Default configuration file for LLM evaluation framework
+test_suites:
+  - name: "customer_service_eval"
+    description: "Evaluates LLM responses to customer service queries"
+    metrics:
+      - type: "answer_relevancy"
+        threshold: 0.7
+      - type: "custom"
+        name: "Correctness"
+        criteria: "Determine if the response is factually correct and answers the user's question completely."
+        threshold: 0.8
+      - type: "custom"
+        name: "Helpfulness"
+        criteria: "Evaluate how helpful the response is in addressing the user's needs."
+        threshold: 0.7
+    model_config:
+      provider: "openai"
+      model_name: "gpt-4"
+      parameters:
+        temperature: 0.1
+        max_tokens: 500
+    test_cases:
+      source: "file"
+      path: "test_cases/customer_service.json"
+    human_review_required: true
+    review_assignment: "qa_team@example.com"
+
+  - name: "technical_support_eval"
+    description: "Evaluates LLM responses to technical support questions"
+    metrics:
+      - type: "answer_relevancy"
+        threshold: 0.7
+      - type: "faithfulness"
+        threshold: 0.8
+      - type: "custom"
+        name: "Technical Accuracy"
+        criteria: "Determine if the response contains technically accurate information and correct procedures."
+        threshold: 0.8
+    model_config:
+      provider: "openai"
+      model_name: "gpt-4"
+      parameters:
+        temperature: 0.0
+        max_tokens: 800
+    test_cases:
+      source: "file"
+      path: "test_cases/technical_support.json"
+    human_review_required: true
+    review_assignment: "tech_team@example.com"
+
+output_dir: "results"
+azure_integration:
+  resource_group: "llm-eval-resources"
+  storage_account: "llmevalresults"
+  key_vault: "llm-eval-keys"
+  app_service: "llm-eval-review-app"
+  pipeline_template: "azure-pipelines/llm-eval.yml"

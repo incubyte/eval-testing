@@ -1,0 +1,112 @@
+# Azure DevOps Pipeline for LLM Evaluation
+# This pipeline runs LLM evaluations as part of CI/CD process
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+  paths:
+    include:
+      - 'test_cases/**'
+      - 'config/**'
+      - 'src/**'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  pythonVersion: '3.12'
+  configFile: '$(Build.SourcesDirectory)/config/default.yaml'
+  resultsDir: '$(Build.ArtifactStagingDirectory)/evaluation-results'
+
+stages:
+- stage: Evaluation
+  displayName: 'LLM Evaluation'
+  jobs:
+  - job: RunEvaluation
+    displayName: 'Run Evaluations'
+    timeoutInMinutes: 60
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(pythonVersion)'
+        addToPath: true
+      displayName: 'Set up Python'
+    
+    - script: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+      displayName: 'Install dependencies'
+
+    - task: AzureKeyVault@2
+      inputs:
+        azureSubscription: 'your-service-connection'
+        KeyVaultName: 'llm-eval-keys'
+        SecretsFilter: 'OPENAI-API-KEY,ROLAI-AUTH-TOKEN'
+        RunAsPreJob: true
+      displayName: 'Get secrets from Key Vault'
+
+    - script: |
+        # Create .env file with secrets
+        echo "OPENAI_API_KEY=$(OPENAI-API-KEY)" > .env
+        echo "ROLAI_BASE_URL=$(ROLAI_BASE_URL)" >> .env
+        echo "ROLAI_ORGANIZATION_ID=$(ROLAI_ORGANIZATION_ID)" >> .env
+        echo "ROLAI_AUTH_TOKEN=$(ROLAI-AUTH-TOKEN)" >> .env
+      displayName: 'Set environment variables'
+
+    - script: |
+        # Run customer service evaluations
+        python -m src.cli.evaluate --config $(configFile) --suite customer_service_eval
+        # Run technical support evaluations
+        python -m src.cli.evaluate --config $(configFile) --suite technical_support_eval
+      displayName: 'Run evaluations'
+      
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: 'results'
+        Contents: '**'
+        TargetFolder: '$(resultsDir)'
+      displayName: 'Copy results'
+    
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(resultsDir)'
+        ArtifactName: 'evaluation-results'
+        publishLocation: 'Container'
+      displayName: 'Publish results'
+
+- stage: Analysis
+  displayName: 'Analyze Results'
+  dependsOn: Evaluation
+  jobs:
+  - job: AnalyzeResults
+    displayName: 'Analyze Evaluation Results'
+    steps:
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'evaluation-results'
+        downloadPath: '$(System.ArtifactsDirectory)'
+      displayName: 'Download evaluation results'
+      
+    - script: |
+        # Check for failing tests
+        python -m src.cli.analyze --results $(System.ArtifactsDirectory)/evaluation-results --threshold 0.7
+      displayName: 'Analyze results'
+      
+    - task: AzureFunction@1
+      inputs:
+        function: '$(NOTIFICATION_FUNCTION_URL)'
+        key: '$(NOTIFICATION_FUNCTION_KEY)'
+        method: 'POST'
+        headers: '{"Content-Type": "application/json"}'
+        body: |
+          {
+            "buildId": "$(Build.BuildId)",
+            "buildUrl": "$(Build.BuildUri)",
+            "resultsUrl": "$(Build.ArtifactStagingDirectory)/evaluation-results"
+          }
+        waitForCompletion: 'false'
+      displayName: 'Send notification'

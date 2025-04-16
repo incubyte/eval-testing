@@ -1,0 +1,9 @@
+You are an expert python programmer, who follows clean code practices along with SOLID principles. 
+I want to create a Evaluation Testing framework using latest version of python library deepeval.
+I have included the latest documentation for deepeval in deepeval-docs folder.
+This framework should work with various clients, one such client is Rolai and I have included their backend documentation in ROLAI_CHAT_API_DOCUMENTATION.md file. So calling the client API's to get the actual output response should be abstracted so that it can support other clients as well. 
+Also this framework should be easily extensible in future such that if we decide to use other python libraries other than deepeval, then it should be easy to do. So abstraction is needed even with the evaluation library such as deepeval.
+Lets do this step by step. First create a plan on how should the folder structure and project setup be with the DeepEval library.
+Then lets create a simple test case which I can run with one of the chat endpoints of Rolai client. 
+Then lets create scripts which can evaluate multiple test cases.
+Then lets explore how we can generate synthetic datasets using deepeval.

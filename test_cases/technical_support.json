@@ -1,0 +1,38 @@
+[
+  {
+    "id": "tech-001",
+    "input": "How do I connect to the API using Python?",
+    "expected_output": "To connect to our API using Python, follow these steps:\n\n1. Install the requests library if you haven't already:\n   ```python\n   pip install requests\n   ```\n\n2. Use the following code template to make API calls:\n   ```python\n   import requests\n   \n   API_KEY = 'your_api_key_here'\n   BASE_URL = 'https://api.example.com/v1'\n   \n   headers = {\n       'Authorization': f'Bearer {API_KEY}',\n       'Content-Type': 'application/json'\n   }\n   \n   # Example GET request\n   response = requests.get(\n       f'{BASE_URL}/endpoint',\n       headers=headers,\n       params={'param1': 'value1'}\n   )\n   \n   # Check response\n   if response.status_code == 200:\n       data = response.json()\n       print(data)\n   else:\n       print(f'Error: {response.status_code}')\n       print(response.text)\n   ```\n\n3. Replace 'your_api_key_here' with your actual API key from the dashboard.\n\nFor complete documentation, visit our API docs at https://docs.example.com/api.",
+    "context": null,
+    "metadata": {
+      "category": "api",
+      "difficulty": "medium",
+      "last_reviewed": "2025-04-05",
+      "reviewed_by": "developer@example.com"
+    }
+  },
+  {
+    "id": "tech-002",
+    "input": "Why am I getting a 429 error when calling the API?",
+    "expected_output": "A 429 error means 'Too Many Requests' and indicates that you've exceeded your rate limits for our API.\n\nOur rate limits are:\n- Free tier: 60 requests per minute, 1,000 per day\n- Pro tier: 300 requests per minute, 10,000 per day\n- Enterprise tier: Custom limits based on your plan\n\nTo resolve this issue:\n\n1. Implement proper rate limiting in your code by adding delays between requests or using a backoff strategy.\n\n2. Handle 429 errors by implementing retry logic with exponential backoff:\n   ```python\n   import time\n   import random\n   \n   max_retries = 5\n   for attempt in range(max_retries):\n       response = requests.get(url, headers=headers)\n       \n       if response.status_code == 429:\n           # Get retry-after header or use exponential backoff\n           retry_after = int(response.headers.get('Retry-After', 2 ** attempt))\n           # Add jitter to avoid thundering herd problem\n           sleep_time = retry_after + random.uniform(0, 1)\n           print(f'Rate limited. Retrying after {sleep_time:.2f} seconds')\n           time.sleep(sleep_time)\n       else:\n           break\n   ```\n\n3. Consider upgrading your plan if you consistently hit rate limits.\n\n4. Check for runaway scripts or processes that might be making too many API calls.\n\nIf you continue to experience issues, please contact our support team with your API key and a timestamp of when you experienced the 429 errors.",
+    "context": null,
+    "metadata": {
+      "category": "api",
+      "difficulty": "hard",
+      "last_reviewed": "2025-04-06",
+      "reviewed_by": "developer@example.com"
+    }
+  },
+  {
+    "id": "tech-003",
+    "input": "How do I install the SDK on Ubuntu?",
+    "expected_output": "To install our SDK on Ubuntu, follow these steps:\n\n1. Update your package lists:\n   ```bash\n   sudo apt update\n   ```\n\n2. Install required dependencies:\n   ```bash\n   sudo apt install python3-pip python3-dev build-essential libssl-dev libffi-dev\n   ```\n\n3. Install our SDK via pip:\n   ```bash\n   pip3 install example-sdk\n   ```\n\n4. Verify the installation:\n   ```bash\n   python3 -c \"import example_sdk; print(example_sdk.__version__)\"\n   ```\n\nIf you need a specific version, you can specify it during installation:\n```bash\npip3 install example-sdk==2.1.0\n```\n\nFor system-wide installation (not recommended unless you know what you're doing):\n```bash\nsudo pip3 install example-sdk\n```\n\nIf you encounter any issues, check our troubleshooting guide at https://docs.example.com/sdk/troubleshooting or contact our support team.",
+    "context": null,
+    "metadata": {
+      "category": "sdk",
+      "difficulty": "medium",
+      "last_reviewed": "2025-04-07",
+      "reviewed_by": "developer@example.com" 
+    }
+  }
+]
