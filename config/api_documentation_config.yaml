@@ -1,0 +1,25 @@
+test_suites:
+- name: api_documentation_eval
+  description: Evaluates LLM responses to API Documentation queries
+  metrics:
+  - type: answer_relevancy
+    threshold: 0.7
+  - type: faithfulness
+    threshold: 0.8
+  - type: custom
+    name: Completeness
+    criteria: Determine if the response completely addresses the API Documentation
+      question.
+    threshold: 0.8
+  model_config:
+    provider: openai
+    model_name: gpt-4
+    parameters:
+      temperature: 0.1
+      max_tokens: 600
+  test_cases:
+    source: file
+    path: test_cases/api_documentation.json
+  human_review_required: true
+  review_assignment: review_team@example.com
+output_dir: results

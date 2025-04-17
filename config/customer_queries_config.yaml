@@ -1,0 +1,25 @@
+test_suites:
+- name: customer_queries_eval
+  description: Evaluates LLM responses to Customer Queries queries
+  metrics:
+  - type: answer_relevancy
+    threshold: 0.7
+  - type: faithfulness
+    threshold: 0.8
+  - type: custom
+    name: Completeness
+    criteria: Determine if the response completely addresses the Customer Queries
+      question.
+    threshold: 0.8
+  model_config:
+    provider: openai
+    model_name: gpt-4
+    parameters:
+      temperature: 0.1
+      max_tokens: 600
+  test_cases:
+    source: file
+    path: test_cases/customer_queries.json
+  human_review_required: true
+  review_assignment: review_team@example.com
+output_dir: results

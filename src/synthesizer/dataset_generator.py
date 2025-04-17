@@ -2,6 +2,7 @@ from typing import List, Dict, Any, Optional
 import os
 
 from deepeval.synthesizer import Synthesizer as DeepEvalSynthesizer
+from deepeval.synthesizer.config import StylingConfig
 from deepeval.dataset import EvaluationDataset
 
 
@@ -83,11 +84,20 @@ class DatasetGenerator:
         Returns:
             EvaluationDataset containing generated goldens
         """
+        # Create a styling config to use the topic information
+        styling_config = StylingConfig(
+            task=f"Answering questions related to {topic}",
+            scenario=f"Users seeking information about {topic}",
+            input_format="Questions in English related to the topic",
+            expected_output_format="Comprehensive and accurate answers to questions"
+        )
+        
+        # Create a new synthesizer with our styling config for the topic
+        topic_synthesizer = DeepEvalSynthesizer(styling_config=styling_config)
+        
         # Generate goldens using DeepEval synthesizer
-        goldens = self.synthesizer.generate_goldens_from_scratch(
-            topic=topic,
-            n=num_test_cases,
-            instruction=instruction
+        goldens = topic_synthesizer.generate_goldens_from_scratch(
+            num_goldens=num_test_cases
         )
         
         return EvaluationDataset(goldens=goldens)

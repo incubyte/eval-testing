@@ -1,0 +1,38 @@
+[
+  {
+    "id": "cq-001",
+    "input": "Retrieve specifics of an individual client inquiry utilizing CRM database access protocols.",
+    "expected_output": null,
+    "context": null,
+    "metadata": {
+      "category": "customer_queries",
+      "difficulty": "medium",
+      "last_reviewed": "2025-04-16",
+      "reviewed_by": "auto_generated"
+    }
+  },
+  {
+    "id": "cq-002",
+    "input": "Identify trends in recent customer queries, analyzing factors such as frequency, sentiment analysis, and seasonal variations, to improve service and address emerging needs.",
+    "expected_output": null,
+    "context": null,
+    "metadata": {
+      "category": "customer_queries",
+      "difficulty": "medium",
+      "last_reviewed": "2025-04-16",
+      "reviewed_by": "auto_generated"
+    }
+  },
+  {
+    "id": "cq-003",
+    "input": "Examine how AI-driven solutions enhance customer inquiry response strategies in dynamic environments.",
+    "expected_output": null,
+    "context": null,
+    "metadata": {
+      "category": "customer_queries",
+      "difficulty": "medium",
+      "last_reviewed": "2025-04-16",
+      "reviewed_by": "auto_generated"
+    }
+  }
+]

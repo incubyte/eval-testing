@@ -1,0 +1,26 @@
+[
+  {
+    "id": "ad-001",
+    "input": "Compare the roles and mechanisms of APIs and middleware in enabling software app communication.",
+    "expected_output": "[Sample response for: Compare the roles and mechanisms of APIs and middleware in enabling software app communication.]\n\nThis is a placeholder response that should be edited manually.",
+    "context": null,
+    "metadata": {
+      "category": "api_documentation",
+      "difficulty": "medium",
+      "last_reviewed": "2025-04-16",
+      "reviewed_by": "auto_generated"
+    }
+  },
+  {
+    "id": "ad-002",
+    "input": "Could you delve into the distinctions between REST and SOAP APIs, considering factors like security, scalability, and performance efficiency, and elucidate scenarios for optimal utilization of each architectural style in enterprise applications?",
+    "expected_output": "[Sample response for: Could you delve into the distinctions between REST and SOAP APIs, considering factors like security, scalability, and performance efficiency, and elucidate scenarios for optimal utilization of each architectural style in enterprise applications?]\n\nThis is a placeholder response that should be edited manually.",
+    "context": null,
+    "metadata": {
+      "category": "api_documentation",
+      "difficulty": "medium",
+      "last_reviewed": "2025-04-16",
+      "reviewed_by": "auto_generated"
+    }
+  }
+]
