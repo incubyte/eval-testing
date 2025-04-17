@@ -94,16 +94,27 @@ See the [CI/CD Integration Guide](docs/cicd-integration.md) for details.
 
 ### Generating Synthetic Datasets
 
+The framework provides multiple methods for generating synthetic evaluation datasets using DeepEval's synthesizer:
+
 ```bash
-# Generate from documents
-python generate_synthetic_dataset.py --method docs --docs path/to/doc1.pdf path/to/doc2.pdf --count 10
+# Generate from documents - creates test cases from your knowledge base documents
+python generate_synthetic_dataset.py --method docs --docs path/to/doc1.pdf path/to/doc2.pdf --count 10 --output test_cases --generate-config
 
-# Generate from contexts
-python generate_synthetic_dataset.py --method contexts --contexts "Context 1" "Context 2" --count 10
+# Generate from contexts - creates test cases from provided context strings
+python generate_synthetic_dataset.py --method contexts --contexts "Context 1" "Context 2" --count 10 --topic "My Topic" --output test_cases --generate-config
 
-# Generate from scratch
-python generate_synthetic_dataset.py --method scratch --topic "Machine Learning" --count 10
+# Generate from scratch - creates test cases for a specific topic without context
+python generate_synthetic_dataset.py --method scratch --topic "Machine Learning" --count 10 --output test_cases --generate-config
 ```
+
+Generated test cases are saved as JSON files in the specified output directory (defaults to `test_cases/`). Each test case includes:
+- Unique ID based on the topic
+- Input query
+- Expected output
+- Optional context
+- Metadata (category, difficulty, review status)
+
+When `--generate-config` is specified, a default YAML configuration file will be created in the `config/` directory with recommended evaluation metrics and thresholds for the generated test cases.
 
 ### Running Tests with pytest
 

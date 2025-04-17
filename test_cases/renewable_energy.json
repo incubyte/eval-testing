@@ -1,0 +1,50 @@
+[
+  {
+    "id": "re-001",
+    "input": "Analyze how solar panels' energy-saving potential and eco-impact advantages enhance residential building sustainability.",
+    "expected_output": "[Sample response for: Analyze how solar panels' energy-saving potential and eco-impact advantages enhance residential building sustainability.]\n\nThis is a placeholder response that should be edited manually.",
+    "context": null,
+    "metadata": {
+      "category": "renewable_energy",
+      "difficulty": "medium",
+      "last_reviewed": "2025-04-17",
+      "reviewed_by": "auto_generated"
+    }
+  },
+  {
+    "id": "re-002",
+    "input": "Analyze the effects of wind energy on avian/bat populations, emphasizing mitigation strategies to minimize ecological disruption.",
+    "expected_output": "[Sample response for: Analyze the effects of wind energy on avian/bat populations, emphasizing mitigation strategies to minimize ecological disruption.]\n\nThis is a placeholder response that should be edited manually.",
+    "context": null,
+    "metadata": {
+      "category": "renewable_energy",
+      "difficulty": "medium",
+      "last_reviewed": "2025-04-17",
+      "reviewed_by": "auto_generated"
+    }
+  },
+  {
+    "id": "re-003",
+    "input": "Compare technological advancements in geothermal energy efficiency with those in solar and wind energy.",
+    "expected_output": "[Sample response for: Compare technological advancements in geothermal energy efficiency with those in solar and wind energy.]\n\nThis is a placeholder response that should be edited manually.",
+    "context": null,
+    "metadata": {
+      "category": "renewable_energy",
+      "difficulty": "medium",
+      "last_reviewed": "2025-04-17",
+      "reviewed_by": "auto_generated"
+    }
+  },
+  {
+    "id": "re-004",
+    "input": "Assess the influence of fiscal incentives on the proliferation of sustainable energy in emerging economies.",
+    "expected_output": "[Sample response for: Assess the influence of fiscal incentives on the proliferation of sustainable energy in emerging economies.]\n\nThis is a placeholder response that should be edited manually.",
+    "context": null,
+    "metadata": {
+      "category": "renewable_energy",
+      "difficulty": "medium",
+      "last_reviewed": "2025-04-17",
+      "reviewed_by": "auto_generated"
+    }
+  }
+]
